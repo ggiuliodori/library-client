@@ -10,28 +10,17 @@ function GetBooks() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
-  const [initialLoad, setInitialLoad] = useState(true);
-
-  const observer = useRef(null);
-
-  useEffect(() => {
-    loadBooks();
-  }, [page]);
 
   const loadBooks = async () => {
     setLoading(true);
     try {
       const response = await axios.get(`http://localhost:8080/api/books?page=${page}&size=5&sort=title,asc&${searchType}=${searchTerm}`);
-      
-      if (page === 0 && initialLoad) {
+      if (page === 0) {
         setBooks(response.data.content);
       } else {
         setBooks(prevBooks => [...prevBooks, ...response.data.content]);
       }
-
       setTotalPages(response.data.totalPages);
-      setInitialLoad(false);
-
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -43,13 +32,11 @@ function GetBooks() {
   const handleSearchTermChange = (event) => {
     setSearchTerm(event.target.value);
     setPage(0); // Reset page when search term changes
-    setInitialLoad(true);
   };
 
   const handleSearchTypeChange = (event) => {
     setSearchType(event.target.value);
     setPage(0); // Reset page when search type changes
-    setInitialLoad(true);
   };
 
   const handleScroll = (entries) => {
@@ -66,18 +53,22 @@ function GetBooks() {
       threshold: 1.0
     };
 
-    observer.current = new IntersectionObserver(handleScroll, options);
+    const observer = new IntersectionObserver(handleScroll, options);
 
     if (lastBookElementRef.current) {
-      observer.current.observe(lastBookElementRef.current);
+      observer.observe(lastBookElementRef.current);
     }
 
     return () => {
-      if (observer.current) {
-        observer.current.disconnect();
+      if (observer) {
+        observer.disconnect();
       }
     };
   }, [page, totalPages, loading]);
+
+  useEffect(() => {
+    loadBooks();
+  }, [page, searchTerm, searchType]);
 
   return (
     <Container className="get-books-container">

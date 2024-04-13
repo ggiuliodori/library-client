@@ -1,0 +1,11 @@
+.manage-books-container {
+    padding: 20px;
+  }
+  
+  .book-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  

@@ -1,43 +1,41 @@
-import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { Button, Container, Toolbar, Box } from '@mui/material';
 import GetBooks from './GetBooks';
 import ManageBook from './ManageBook';
+import { Button } from '@mui/material';
+import './App.css';
+
+function Home() {
+  return (
+    <div className="home-container">
+      <img src="/images/library.jpg" alt="Librería" className="library-image" />
+    </div>
+  );
+}
 
 function App() {
   return (
     <Router>
-      <Container>
-        <Toolbar>
-          <Box sx={{ mr: 2 }}>
-            <Button 
-              component={Link} 
-              to="/consultas" 
-              color="primary" 
-              variant="contained"
-              sx={{ boxShadow: 2, borderRadius: 2 }}
-            >
-              Consultas de libros
-            </Button>
-          </Box>
-          <Box sx={{ mr: 2 }}>
-            <Button 
-              component={Link} 
-              to="/gestion" 
-              color="primary" 
-              variant="contained"
-              sx={{ boxShadow: 2, borderRadius: 2 }}
-            >
-              Gestión de libros
-            </Button>
-          </Box>
-        </Toolbar>
+      <div className="App">
+        <header className="App-header">
+          <nav>
+            <ul className="nav-list">
+              <li>
+                <Link to="/buscar" className="nav-button">Buscar</Link>
+              </li>
+              <li>
+                <Link to="/gestion/agregar" className="nav-button">Agregar Libro</Link>
+              </li>
+            </ul>
+          </nav>
+        </header>
+
         <Routes>
-          <Route path="/consultas" element={<GetBooks />} />
-          <Route path="/gestion" element={<ManageBook />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/buscar" element={<GetBooks />} />
+          <Route path="/gestion/agregar" element={<ManageBook />} />
         </Routes>
-      </Container>
+      </div>
     </Router>
   );
 }

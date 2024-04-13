@@ -1,33 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Container, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Grid, Card, CardContent, List } from '@mui/material';
+import { Container, Typography, TextField, FormControl, InputLabel, Select, MenuItem, List, ListItem, ListItemText } from '@mui/material';
 import './GetBooks.css';
 
 function GetBooks() {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('title');
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  const observer = useRef(null);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/books?${searchType}=${searchTerm}`);
-        setBooks(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    loadBooks();
+  }, [page]);
 
-    fetchBooks();
-  }, [searchTerm, searchType]);
+  const loadBooks = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:8080/api/books?page=${page}&size=5&sort=title,asc&${searchType}=${searchTerm}`);
+      
+      if (page === 0 && initialLoad) {
+        setBooks(response.data.content);
+      } else {
+        setBooks(prevBooks => [...prevBooks, ...response.data.content]);
+      }
+
+      setTotalPages(response.data.totalPages);
+      setInitialLoad(false);
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setLoading(false);
+  };
+
+  const lastBookElementRef = useRef(null);
 
   const handleSearchTermChange = (event) => {
     setSearchTerm(event.target.value);
+    setPage(0); // Reset page when search term changes
+    setInitialLoad(true);
   };
 
   const handleSearchTypeChange = (event) => {
     setSearchType(event.target.value);
+    setPage(0); // Reset page when search type changes
+    setInitialLoad(true);
   };
+
+  const handleScroll = (entries) => {
+    const lastEntry = entries[0];
+    if (lastEntry.isIntersecting && !loading && page < totalPages - 1) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };
+
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0
+    };
+
+    observer.current = new IntersectionObserver(handleScroll, options);
+
+    if (lastBookElementRef.current) {
+      observer.current.observe(lastBookElementRef.current);
+    }
+
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [page, totalPages, loading]);
 
   return (
     <Container className="get-books-container">
@@ -56,31 +106,66 @@ function GetBooks() {
           className="search-input"
         />
       </div>
-      <Grid container spacing={3}>
-        {books.map((book) => (
-          <Grid item xs={12} sm={6} md={4} key={book.id}>
-            <Card className="book-card">
-              <CardContent>
-                <Typography variant="h6" component="div">
-                  {book.title}
-                </Typography>
-                <Typography variant="subtitle1" color="textSecondary">
-                  Autor: {book.author}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Género: {book.genre}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Estado: {book.condition}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Descripción: {book.conditionDescription}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      <List className="book-list">
+        {books.map((book, index) => {
+          if (books.length === index + 1) {
+            return (
+              <ListItem key={book.id} className="book-item" ref={lastBookElementRef}>
+                <ListItemText
+                  primary={book.title}
+                  secondary={
+                    <>
+                      <Typography component="span" variant="body2" color="textPrimary" className="book-author">
+                        Autor: {book.author}
+                      </Typography>
+                      <br />
+                      <Typography component="span" variant="body2" color="textSecondary" className="book-genre">
+                        Género: {book.genre}
+                      </Typography>
+                      <br />
+                      <Typography component="span" variant="body2" color="textSecondary" className="book-condition">
+                        Estado: {book.condition}
+                      </Typography>
+                      <br />
+                      <Typography component="span" variant="body2" color="textSecondary" className="book-conditionDescription">
+                        Descripción: {book.conditionDescription}
+                      </Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+            );
+          } else {
+            return (
+              <ListItem key={book.id} className="book-item">
+                <ListItemText
+                  primary={book.title}
+                  secondary={
+                    <>
+                      <Typography component="span" variant="body2" color="textPrimary" className="book-author">
+                        Autor: {book.author}
+                      </Typography>
+                      <br />
+                      <Typography component="span" variant="body2" color="textSecondary" className="book-genre">
+                        Género: {book.genre}
+                      </Typography>
+                      <br />
+                      <Typography component="span" variant="body2" color="textSecondary" className="book-condition">
+                        Estado: {book.condition}
+                      </Typography>
+                      <br />
+                      <Typography component="span" variant="body2" color="textSecondary" className="book-conditionDescription">
+                        Descripción: {book.conditionDescription}
+                      </Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+            );
+          }
+        })}
+      </List>
+      {loading && <Typography variant="body1" align="center">Cargando...</Typography>}
     </Container>
   );
 }

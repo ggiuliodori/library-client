@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import GetBooks from './GetBooks';
 import ManageBook from './ManageBook';
-import { Button } from '@mui/material';
+import GetMembers from './GetMembers';
 import './App.css';
 
 function Home() {
@@ -26,6 +26,9 @@ function App() {
               <li>
                 <Link to="/gestion/agregar" className="nav-button">Agregar Libro</Link>
               </li>
+              <li>
+                <Link to="/miembros" className="nav-button">Miembros</Link>
+              </li>
             </ul>
           </nav>
         </header>
@@ -34,6 +37,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/buscar" element={<GetBooks />} />
           <Route path="/gestion/agregar" element={<ManageBook />} />
+          <Route path="/miembros" element={<GetMembers />} />
         </Routes>
       </div>
     </Router>

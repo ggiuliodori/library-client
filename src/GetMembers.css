@@ -1,0 +1,56 @@
+.get-members-container {
+  padding: 20px;
+  background-color: #f4f4f4; /* Fondo del contenedor */
+}
+
+.search-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background-color: #d4d8fc; /* Fondo del contenedor de búsqueda */
+  padding: 10px;
+  border-radius: 8px; /* Bordes redondeados */
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+}
+
+.search-form {
+  min-width: 120px;
+  margin-right: 10px;
+}
+
+.search-input {
+  flex-grow: 1;
+}
+
+.member-list {
+  width: 100%; /* Ancho completo de la lista */
+}
+
+.member-item {
+  border: 1px solid #d1d1d1; /* Borde ligero */
+  border-radius: 8px; /* Bordes redondeados */
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+  transition: transform 0.2s; /* Transición suave */
+  margin-bottom: 15px; /* Espacio entre miembros */
+  background-color: #f8f0f0; /* Fondo del miembro */
+}
+
+.member-item:hover {
+  transform: translateY(-5px); /* Efecto de levantamiento al pasar el mouse */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+  background-color: #e8e6ff; /* Fondo del miembro */
+}
+
+.member-details {
+  padding: 15px;
+}
+
+.member-name {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.member-dni {
+  margin-bottom: 5px;
+}

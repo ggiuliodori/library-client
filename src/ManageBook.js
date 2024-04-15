@@ -7,7 +7,10 @@ function ManageBooks() {
   const [book, setBook] = useState({
     title: '',
     author: '',
+    editorial: '',
+    publicationDate: '',
     genre: '',
+    resume: '',
     condition: '',
     conditionDescription: '',
   });
@@ -28,7 +31,10 @@ function ManageBooks() {
       setBook({
         title: '',
         author: '',
+        editorial: '',
+        publicationDate: '',
         genre: '',
+        resume: '',
         condition: '',
         conditionDescription: '',
       });
@@ -50,7 +56,7 @@ function ManageBooks() {
           onChange={handleChange}
           fullWidth
           margin="normal"
-          required
+          required // Mantenemos el atributo required para el título
         />
         <TextField
           label="Autor"
@@ -60,7 +66,25 @@ function ManageBooks() {
           onChange={handleChange}
           fullWidth
           margin="normal"
-          required
+          required // Mantenemos el atributo required para el autor
+        />
+        <TextField
+          label="Editorial"
+          variant="outlined"
+          name="editorial"
+          value={book.editorial}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Fecha de Publicación (año)"
+          variant="outlined"
+          name="publicationDate"
+          value={book.publicationDate}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
         />
         <TextField
           label="Género"
@@ -70,7 +94,17 @@ function ManageBooks() {
           onChange={handleChange}
           fullWidth
           margin="normal"
-          required
+        />
+        <TextField
+          label="Resumen"
+          variant="outlined"
+          name="resume"
+          value={book.resume}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          multiline
+          rows={4}
         />
         <TextField
           label="Estado"
@@ -80,7 +114,6 @@ function ManageBooks() {
           onChange={handleChange}
           fullWidth
           margin="normal"
-          required
         />
         <TextField
           label="Descripción del Estado"
@@ -90,7 +123,6 @@ function ManageBooks() {
           onChange={handleChange}
           fullWidth
           margin="normal"
-          required
         />
         <Button type="submit" variant="contained" color="primary">
           Guardar

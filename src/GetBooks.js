@@ -1,6 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Container, Typography, TextField, FormControl, InputLabel, Select, MenuItem, List, ListItem, ListItemText } from '@mui/material';
+import {
+  Container,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
+} from '@mui/material';
 import './GetBooks.css';
 
 function GetBooks() {
@@ -10,6 +26,9 @@ function GetBooks() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const loadBooks = async () => {
     setLoading(true);
@@ -70,6 +89,46 @@ function GetBooks() {
     loadBooks();
   }, [page, searchTerm, searchType]);
 
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setSelectedBook((prevBook) => ({
+      ...prevBook,
+      [name]: value,
+    }));
+  };
+
+  const handleEdit = (book) => {
+    setSelectedBook(book);
+    setIsEditing(true);
+    setOpenDialog(true);
+  };
+
+  const handleClose = () => {
+    setIsEditing(false);
+    setSelectedBook(null);
+    setOpenDialog(false);
+    setBooks([]);
+    setPage(0);
+    loadBooks(); // Recargar la lista de libros después de editar
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      if (isEditing) {
+        await axios.put(`http://localhost:8080/api/books/${selectedBook.id}`, selectedBook);
+        alert('Libro actualizado con éxito');
+      } else {
+        await axios.post('http://localhost:8080/api/books', selectedBook);
+        alert('Libro agregado con éxito');
+      }
+      handleClose();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar el libro');
+    }
+  };
+
   return (
     <Container className="get-books-container">
       <Typography variant="h4" gutterBottom>
@@ -98,65 +157,156 @@ function GetBooks() {
         />
       </div>
       <List className="book-list">
-        {books.map((book, index) => {
-          if (books.length === index + 1) {
-            return (
-              <ListItem key={book.id} className="book-item" ref={lastBookElementRef}>
-                <ListItemText
-                  primary={book.title}
-                  secondary={
-                    <>
-                      <Typography component="span" variant="body2" color="textPrimary" className="book-author">
-                        Autor: {book.author}
-                      </Typography>
-                      <br />
-                      <Typography component="span" variant="body2" color="textSecondary" className="book-genre">
-                        Género: {book.genre}
-                      </Typography>
-                      <br />
-                      <Typography component="span" variant="body2" color="textSecondary" className="book-condition">
-                        Estado: {book.condition}
-                      </Typography>
-                      <br />
-                      <Typography component="span" variant="body2" color="textSecondary" className="book-conditionDescription">
-                        Descripción: {book.conditionDescription}
-                      </Typography>
-                    </>
-                  }
-                />
-              </ListItem>
-            );
-          } else {
-            return (
-              <ListItem key={book.id} className="book-item">
-                <ListItemText
-                  primary={book.title}
-                  secondary={
-                    <>
-                      <Typography component="span" variant="body2" color="textPrimary" className="book-author">
-                        Autor: {book.author}
-                      </Typography>
-                      <br />
-                      <Typography component="span" variant="body2" color="textSecondary" className="book-genre">
-                        Género: {book.genre}
-                      </Typography>
-                      <br />
-                      <Typography component="span" variant="body2" color="textSecondary" className="book-condition">
-                        Estado: {book.condition}
-                      </Typography>
-                      <br />
-                      <Typography component="span" variant="body2" color="textSecondary" className="book-conditionDescription">
-                        Descripción: {book.conditionDescription}
-                      </Typography>
-                    </>
-                  }
-                />
-              </ListItem>
-            );
-          }
-        })}
+        {books.map((book, index) => (
+          <ListItem key={book.id} className="book-item" ref={index === books.length - 1 ? lastBookElementRef : null}>
+            <ListItemText
+              primary={book.title}
+              secondary={
+                <>
+                  <Typography component="span" variant="body2" color="textPrimary" className="book-detail">
+                    Autor: {book.author}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Editorial: {book.editorial}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Fecha de Publicación: {book.publicationDate}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Género: {book.genre}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Resumen: {book.resume}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Estado: {book.condition}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Descripción del Estado: {book.conditionDescription}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="body2" color="textSecondary" className="book-detail">
+                    Nomenclatura: {book.nomenclature}
+                  </Typography>
+                </>
+              }
+            />
+            <Button variant="outlined" color="primary" onClick={() => handleEdit(book)}>
+              Editar
+            </Button>
+          </ListItem>
+        ))}
       </List>
-      {loading && <Typography variant="body1" align="center">Cargando...</Typography>}
+
+      <Dialog open={openDialog} onClose={handleClose}>
+        <DialogTitle>{isEditing ? 'Editar Libro' : 'Agregar Libro'}</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Nomenclatura"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="nomenclature"
+              value={selectedBook?.nomenclature || ''}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              label="Título"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="title"
+              value={selectedBook?.title || ''}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              label="Autor"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="author"
+              value={selectedBook?.author || ''}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              label="Editorial"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="editorial"
+              value={selectedBook?.editorial || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Género"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="genre"
+              value={selectedBook?.genre || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Fecha de Publicación"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="publicationDate"
+              value={selectedBook?.publicationDate || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Resumen"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              name="resume"
+              value={selectedBook?.resume || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Estado"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="condition"
+              value={selectedBook?.condition || ''}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Descripción del Estado"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              name="conditionDescription"
+              value={selectedBook?.conditionDescription || ''}
+              onChange={handleChange}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit} color="primary">
+            {isEditing ? 'Actualizar' : 'Guardar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
